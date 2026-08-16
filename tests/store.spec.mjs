@@ -10,7 +10,7 @@ const section = {
       api: 'openai-completions',
       baseURL: 'https://acme.example/v1',
       models: [
-        { id: 'model-a', reasoningEfforts: { off: null, high: 'high' } },
+        { id: 'model-a', name: 'Model A', maxTokens: 128000, reasoningEfforts: { off: null, high: 'high' } },
         { id: 'model-b' },
       ],
     },
@@ -52,7 +52,7 @@ test('buildOps yields no ops for an unchanged config', () => {
   assert.deepEqual(buildOps(section, config), [])
 })
 
-test('buildOps emits the minimal diff for effort edits', () => {
+test('buildOps replaces whole models arrays, preserving unrelated fields', () => {
   const config = readConfig(section)
   // acme/model-a: swap high -> max (off kept)
   config.providers[0].models[0].efforts = ['off', 'max']
@@ -64,21 +64,31 @@ test('buildOps emits the minimal diff for effort edits', () => {
   config.providers[1].models[0].efforts = []
 
   const ops = buildOps(section, config)
+  assert.equal(ops.length, 2)
 
-  const set = (path) => ops.find((op) => op.op === 'set' && deepEqualJson(op.path, path))
-  const unset = (path) => ops.find((op) => op.op === 'unset' && deepEqualJson(op.path, path))
+  const acme = ops.find((op) => op.op === 'set' && deepEqualJson(op.path, ['providers', 'acme', 'models']))
+  assert.ok(acme, 'acme models set')
+  assert.deepEqual(acme.value, [
+    { id: 'model-a', name: 'Model A', maxTokens: 128000, reasoningEfforts: { off: null, max: 'max' } },
+    { id: 'model-b', reasoningEfforts: { off: null, low: 'low', high: 'high' } },
+  ])
 
-  const aEfforts = set(['providers', 'acme', 'models', '0', 'reasoningEfforts'])
-  assert.ok(aEfforts, 'model-a reasoningEfforts set')
-  assert.deepEqual(aEfforts.value, { off: null, max: 'max' })
+  const beta = ops.find((op) => op.op === 'set' && deepEqualJson(op.path, ['providers', 'beta', 'models']))
+  assert.ok(beta, 'beta models set')
+  assert.deepEqual(beta.value, [{ id: 'model-c' }])
+})
 
-  const bEfforts = set(['providers', 'acme', 'models', '1', 'reasoningEfforts'])
-  assert.ok(bEfforts, 'model-b reasoningEfforts set')
-  assert.deepEqual(bEfforts.value, { off: null, low: 'low', high: 'high' })
-
-  assert.ok(unset(['providers', 'beta', 'models', '0', 'reasoningEfforts']), 'model-c reasoningEfforts unset')
-
-  assert.equal(ops.length, 3)
+test('buildOps preserves hand-declared reasoningEfforts: false', () => {
+  const raw = {
+    providers: {
+      acme: { models: [{ id: 'model-a', reasoningEfforts: false }] },
+    },
+  }
+  const config = readConfig(raw)
+  // The false marker is not a selectable dict, so the row reads disabled and
+  // leaving it untouched must not emit an op.
+  assert.equal(config.providers[0].models[0].enabled, false)
+  assert.deepEqual(buildOps(raw, config), [])
 })
 
 test('renderEfforts preserves custom wire spellings', () => {

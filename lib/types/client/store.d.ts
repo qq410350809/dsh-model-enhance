@@ -26,11 +26,15 @@ export declare function renderEfforts(original: unknown, selected: readonly Effo
 /** Deep equality over JSON-shaped values (objects, arrays, primitives). */
 export declare function deepEqualJson(a: unknown, b: unknown): boolean;
 /**
- * Compute path-addressed settings edits that turn the stored section into the
- * collected UI config. Only changed fields emit ops; `reasoningEfforts: false`
- * (a hand-declared non-reasoning model) and absent fields are preserved unless
- * the user actually changes them. Array indices reference the stored section's
- * own order, which is the order `readConfig` read.
+ * Compute the settings edits that turn the stored section into the collected
+ * UI config. The settings path-op layer only descends plain-object (dict)
+ * paths — an array child is replaced, never indexed — so the `models` array
+ * cannot be edited per model. Each provider whose models changed therefore
+ * emits ONE `set` that replaces its whole `models` array, preserving every
+ * other field on every entry and rewriting only `reasoningEfforts`.
+ *
+ * `reasoningEfforts: false` (a hand-declared non-reasoning model) and absent
+ * fields are preserved unless the user actually changes them.
  *
  * @param original - the stored user section the config was read from.
  * @param next - the collected UI config.

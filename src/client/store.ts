@@ -115,23 +115,16 @@ export function deepEqualJson(a: unknown, b: unknown): boolean {
   return false
 }
 
-/** Reduce a raw `reasoningEfforts` dict to only the level keys (for diffing). */
-function levelsOnly(raw: unknown): Record<string, unknown> | undefined {
-  const dict = effortsDictOf(raw)
-  if (dict === undefined) return undefined
-  const out: Record<string, unknown> = {}
-  for (const level of EFFORT_LEVELS) {
-    if (Object.prototype.hasOwnProperty.call(dict, level)) out[level] = dict[level]
-  }
-  return out
-}
-
 /**
- * Compute path-addressed settings edits that turn the stored section into the
- * collected UI config. Only changed fields emit ops; `reasoningEfforts: false`
- * (a hand-declared non-reasoning model) and absent fields are preserved unless
- * the user actually changes them. Array indices reference the stored section's
- * own order, which is the order `readConfig` read.
+ * Compute the settings edits that turn the stored section into the collected
+ * UI config. The settings path-op layer only descends plain-object (dict)
+ * paths — an array child is replaced, never indexed — so the `models` array
+ * cannot be edited per model. Each provider whose models changed therefore
+ * emits ONE `set` that replaces its whole `models` array, preserving every
+ * other field on every entry and rewriting only `reasoningEfforts`.
+ *
+ * `reasoningEfforts: false` (a hand-declared non-reasoning model) and absent
+ * fields are preserved unless the user actually changes them.
  *
  * @param original - the stored user section the config was read from.
  * @param next - the collected UI config.
@@ -145,24 +138,27 @@ export function buildOps(original: RawSection | undefined, next: ModelEnhanceCon
     const rawProvider = isPlainObject(providerMap[provider.name]) ? providerMap[provider.name] : {}
     const rawModels = Array.isArray(rawProvider.models) ? rawProvider.models : []
 
-    provider.models.forEach((model, index) => {
-      const base = ['providers', provider.name, 'models', String(index)]
-      const raw = isPlainObject(rawModels[index]) ? (rawModels[index] as unknown as RawModelProfile) : {}
-      const originalEfforts = raw.reasoningEfforts
-      const wasDict = effortsDictOf(originalEfforts) !== undefined
+    const byId = new Map(provider.models.map((model) => [model.id, model]))
+    const newModels = rawModels.map((entry) => {
+      if (!isPlainObject(entry)) return entry
+      const rawId = nonEmptyString(entry.id)
+      const ui = rawId !== undefined ? byId.get(rawId) : undefined
+      if (ui === undefined) return { ...entry }
 
-      // reasoningEfforts: set the collected dict, or remove a dict that was
-      // disabled (preserving `false` and absent unless actually changed).
-      if (model.enabled && model.efforts.length > 0) {
-        const nextDict = renderEfforts(originalEfforts, model.efforts)
-        const prevDict = levelsOnly(originalEfforts)
-        if (prevDict === undefined || !deepEqualJson(nextDict, prevDict)) {
-          ops.push({ op: 'set', path: [...base, 'reasoningEfforts'], value: nextDict })
-        }
+      const originalEfforts = entry.reasoningEfforts
+      const wasDict = effortsDictOf(originalEfforts) !== undefined
+      const out = { ...entry }
+      if (ui.enabled && ui.efforts.length > 0) {
+        out.reasoningEfforts = renderEfforts(originalEfforts, ui.efforts)
       } else if (wasDict) {
-        ops.push({ op: 'unset', path: [...base, 'reasoningEfforts'] })
+        delete out.reasoningEfforts
       }
+      return out
     })
+
+    if (!deepEqualJson(newModels, rawModels)) {
+      ops.push({ op: 'set', path: ['providers', provider.name, 'models'], value: newModels })
+    }
   }
 
   return ops
