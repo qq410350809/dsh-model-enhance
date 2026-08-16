@@ -131,7 +131,7 @@ export const cssText = `
   flex: none;
   font-size: 11px;
   font-weight: 600;
-  color: var(--dsw-alias-label-dimmed);
+  color: var(--dsw-alias-label-secondary);
   background: var(--dsw-alias-interactive-bg-hover);
   padding: 2px 9px;
   border-radius: 999px;
@@ -200,15 +200,15 @@ export const cssText = `
 }
 .dsh_me_chip {
   --eff: #888;
-  width: 52px;
-  height: 28px;
+  min-width: 42px;
+  height: 24px;
   border: 0;
-  padding: 0 2px;
+  padding: 0 7px;
   font: inherit;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
-  color: var(--dsw-alias-label-dimmed);
+  color: var(--dsw-alias-label-secondary);
   background: var(--dsw-alias-bg-layer-1);
   display: inline-flex;
   align-items: center;
