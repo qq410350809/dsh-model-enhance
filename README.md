@@ -61,9 +61,14 @@ node --test tests/*.spec.mjs
 
 ## Install into the web profile
 
+Install directly from GitHub (the repo ships the built `lib/`):
+
 ```sh
-dsh plugin --profile web add link:/Applications/custom/dsh-plugins/dsh-model-enhance
+dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/heads/main.tar.gz
 ```
 
 or edit `~/.dsh/profiles/web/package.json` directly (see README.zh.md), run
 `pnpm install` in that profile, and restart `dsh web`.
+
+> For local development, use a `link:` install instead:
+> `dsh plugin --profile web add link:/Applications/custom/dsh-plugins/dsh-model-enhance`.

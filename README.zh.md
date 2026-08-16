@@ -49,10 +49,10 @@ node --test tests/*.spec.mjs   # 运行单元测试
 
 ## 安装到 Web profile
 
-在插件目录打包/链接后，把包加进 `~/.dsh/profiles/web`：
+直接从 GitHub 安装（推荐，仓库已含编译好的 `lib/`）：
 
 ```sh
-dsh plugin --profile web add link:/Applications/custom/dsh-plugins/dsh-model-enhance
+dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/heads/main.tar.gz
 ```
 
 或在 `~/.dsh/profiles/web/package.json` 手工添加依赖与 bundle 条目：
@@ -60,7 +60,7 @@ dsh plugin --profile web add link:/Applications/custom/dsh-plugins/dsh-model-enh
 ```jsonc
 {
   "dependencies": {
-    "dsh-model-enhance": "link:/Applications/custom/dsh-plugins/dsh-model-enhance"
+    "dsh-model-enhance": "https://github.com/qq410350809/dsh-model-enhance/archive/refs/heads/main.tar.gz"
   },
   "dsh": {
     "profile": {
@@ -75,3 +75,6 @@ dsh plugin --profile web add link:/Applications/custom/dsh-plugins/dsh-model-enh
 ```
 
 随后在该 profile 目录执行 `pnpm install`，重启 `dsh web` 即可在「设置 → 模型增强」看到板块。
+
+> 本地开发调试时可改用 `link:` 安装：
+> `dsh plugin --profile web add link:/Applications/custom/dsh-plugins/dsh-model-enhance`。
