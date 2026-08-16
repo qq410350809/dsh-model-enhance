@@ -1,8 +1,6 @@
 /**
- * Pure read/write logic for dsh-model-enhance, ported from the DSH Client
- * "模型增强" feature (Rust `get_model_config`/`save_model_config` + the overlay's
- * `render`/`collect`). No React, no DOM, no network — the node-safe build
- * (`lib/store.js`) and the browser bundle both import this.
+ * Pure read/write logic for dsh-model-enhance. No React, no DOM, no network —
+ * the node-safe build (`lib/store.js`) and the browser bundle both import this.
  *
  * - `readConfig` projects the raw `llm-pi-ai` section into the UI shape.
  * - `buildOps` diffs a collected UI config back into path-addressed settings

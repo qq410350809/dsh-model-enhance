@@ -17,9 +17,6 @@ export declare const zh: {
     toggleOn: string;
     toggleOff: string;
     enabledLabel: string;
-    contextWindow: string;
-    maxTokens: string;
-    fieldHint: string;
     'effort.off': string;
     'effort.minimal': string;
     'effort.low': string;
@@ -45,9 +42,6 @@ export declare const en: {
     toggleOn: string;
     toggleOff: string;
     enabledLabel: string;
-    contextWindow: string;
-    maxTokens: string;
-    fieldHint: string;
     'effort.off': string;
     'effort.minimal': string;
     'effort.low': string;

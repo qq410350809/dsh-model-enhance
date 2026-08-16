@@ -1,9 +1,8 @@
 /**
  * The settings-page section for model enhancement: per-provider collapsible
- * cards, each row exposing an enable toggle, multi-select reasoning-effort
- * chips, and context-window / max-tokens fields. This is the React port of the
- * DSH Client "模型增强" overlay (`model-enhance.js` / `model-enhance.html`),
- * reading and writing the `llm-pi-ai` namespace through the settings wire API.
+ * cards, each row exposing an enable toggle and multi-select reasoning-effort
+ * chips, reading and writing the `llm-pi-ai` namespace through the settings
+ * wire API.
  */
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -22,7 +21,7 @@ import type { ModelEnhanceKey } from './locales.ts'
 /** The namespace-bound translate function shared by the section and its rows. */
 type T = PropsLocale<'model-enhance'>['t']
 
-/** Effort-level display metadata (colors mirror the original overlay). */
+/** Effort-level display metadata (colors follow the escalation order). */
 const EFFORT_META: ReadonlyArray<{ key: EffortLevel; color: string }> = [
   { key: 'off', color: '#6b7280' },
   { key: 'minimal', color: '#14b8a6' },
@@ -181,13 +180,6 @@ export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectio
     setState((s) => ({ ...s, config: patchModel(s.config, providerName, modelId, { efforts }) }))
   }
 
-  const setField = (providerName: string, modelId: string, field: 'context_window' | 'max_tokens', raw: string): void => {
-    const trimmed = raw.trim()
-    const value = trimmed === '' ? null : Number.parseInt(trimmed, 10)
-    const next = value === null || Number.isNaN(value) || value <= 0 ? null : value
-    setState((s) => ({ ...s, config: patchModel(s.config, providerName, modelId, { [field]: next }) }))
-  }
-
   if (state.status === 'loading') {
     return <p className="dsh_me_empty">{t('loading')}</p>
   }
@@ -231,7 +223,6 @@ export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectio
             t={t}
             onToggleModel={toggleModel}
             onToggleEffort={toggleEffort}
-            onSetField={setField}
           />
         ))
       )}
@@ -244,10 +235,9 @@ interface ProviderCardProps {
   t: T
   onToggleModel: (providerName: string, modelId: string, model: ModelEnhanceModel) => void
   onToggleEffort: (providerName: string, modelId: string, model: ModelEnhanceModel, level: EffortLevel) => void
-  onSetField: (providerName: string, modelId: string, field: 'context_window' | 'max_tokens', raw: string) => void
 }
 
-function ProviderCard({ provider, t, onToggleModel, onToggleEffort, onSetField }: ProviderCardProps) {
+function ProviderCard({ provider, t, onToggleModel, onToggleEffort }: ProviderCardProps) {
   const [collapsed, setCollapsed] = useState(false)
   return (
     <div className={`dsh_me_card${collapsed ? ' dsh_me_card_collapsed' : ''}`}>
@@ -281,7 +271,6 @@ function ProviderCard({ provider, t, onToggleModel, onToggleEffort, onSetField }
               t={t}
               onToggleModel={onToggleModel}
               onToggleEffort={onToggleEffort}
-              onSetField={onSetField}
             />
           ))
         : null}
@@ -295,40 +284,12 @@ interface ModelRowProps {
   t: T
   onToggleModel: (providerName: string, modelId: string, model: ModelEnhanceModel) => void
   onToggleEffort: (providerName: string, modelId: string, model: ModelEnhanceModel, level: EffortLevel) => void
-  onSetField: (providerName: string, modelId: string, field: 'context_window' | 'max_tokens', raw: string) => void
 }
 
-function ModelRow({ providerName, model, t, onToggleModel, onToggleEffort, onSetField }: ModelRowProps) {
+function ModelRow({ providerName, model, t, onToggleModel, onToggleEffort }: ModelRowProps) {
   return (
     <div className={`dsh_me_row${model.enabled ? '' : ' dsh_me_row_dim'}`}>
       <span className="dsh_me_model" title={model.id}>{model.id}</span>
-
-      <div className="dsh_me_fields">
-        <span className="dsh_me_field">
-          <span className="dsh_me_field_key">{t('contextWindow')}</span>
-          <input
-            className="dsh_me_field_value"
-            type="number"
-            min={1}
-            step={1}
-            value={model.context_window ?? ''}
-            title={`${t('contextWindow')}（${t('fieldHint')}）`}
-            onChange={(e) => onSetField(providerName, model.id, 'context_window', e.target.value)}
-          />
-        </span>
-        <span className="dsh_me_field">
-          <span className="dsh_me_field_key">{t('maxTokens')}</span>
-          <input
-            className="dsh_me_field_value"
-            type="number"
-            min={1}
-            step={1}
-            value={model.max_tokens ?? ''}
-            title={`${t('maxTokens')}（${t('fieldHint')}）`}
-            onChange={(e) => onSetField(providerName, model.id, 'max_tokens', e.target.value)}
-          />
-        </span>
-      </div>
 
       <button
         type="button"

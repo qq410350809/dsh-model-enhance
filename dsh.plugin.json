@@ -1,6 +1,6 @@
 {
   "name": "dsh-model-enhance",
-  "description": "模型增强：按模型编辑 reasoningEfforts / contextWindow / maxTokens",
+  "description": "模型增强：按模型编辑推理强度（reasoningEfforts）",
   "version": "0.1.0",
   "entry": {
     "name": "dsh-model-enhance",

@@ -3,8 +3,6 @@
 在 DeepSeek Harness（DSH）Web 设置页新增「模型增强」板块的插件，按提供方与模型编辑：
 
 - **推理强度**（`reasoningEfforts`）——开关 + 多选等级（off / minimal / low / medium / high / xhigh / max），对应 DSH `llm-pi-ai` 适配器接受的全部思维等级。
-- **上下文窗口**（`contextWindow`）
-- **最大输出 token**（`maxTokens`）
 
 改动即时生效（`llm-pi-ai` 命名空间以 `live` 语义注册），并保留配置里的其他字段。
 

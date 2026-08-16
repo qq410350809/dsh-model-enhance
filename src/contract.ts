@@ -3,12 +3,10 @@
  * (no React, no DOM, no Node imports), so the node-safe `lib/store.js` build and
  * the browser client bundle both consume it.
  *
- * This plugin edits the `llm-pi-ai` user-settings namespace — the exact same
- * section the original DSH Client "模型增强" menu read from `~/.dsh/settings.yaml`
- * (`llm-pi-ai.providers.<provider>.models.<model>`). DSH already registers that
- * namespace (the pi-ai adapter does, through `installSettingsSection`), so the
- * client reads and writes it through the settings wire API without any host-side
- * logic of its own.
+ * This plugin edits the `llm-pi-ai` user-settings namespace
+ * (`llm-pi-ai.providers.<provider>.models.<model>`), which the pi-ai adapter
+ * registers through `installSettingsSection`. The client reads and writes it
+ * through the settings wire API without any host-side logic of its own.
  */
 
 /** The settings namespace this plugin edits. */
@@ -30,10 +28,6 @@ export interface ModelEnhanceModel {
   enabled: boolean
   /** Selected reasoning levels, in escalation order. */
   efforts: EffortLevel[]
-  /** `contextWindow`, or null to remove the field. */
-  context_window: number | null
-  /** `maxTokens`, or null to remove the field. */
-  max_tokens: number | null
 }
 
 /** One provider card in the UI. */
@@ -60,8 +54,6 @@ export type RawReasoningEfforts = false | Record<string, string | null>
 export interface RawModelProfile {
   id?: string
   name?: string
-  contextWindow?: number
-  maxTokens?: number
   reasoningEfforts?: RawReasoningEfforts
   [key: string]: unknown
 }

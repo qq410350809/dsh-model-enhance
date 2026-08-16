@@ -156,47 +156,6 @@ export const cssText = `
 .dsh_me_row_dim .dsh_me_model {
   color: var(--dsw-alias-label-dimmed);
 }
-.dsh_me_fields {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
-}
-.dsh_me_field {
-  display: inline-flex;
-  align-items: stretch;
-  height: 28px;
-  width: 148px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
-  overflow: hidden;
-}
-.dsh_me_field:focus-within {
-  border-color: var(--dsw-alias-brand-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dsw-alias-brand-primary) 18%, transparent);
-}
-.dsh_me_field_key {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 8px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--dsw-alias-label-dimmed);
-  border-right: 1px solid var(--dsw-alias-border-l2);
-  white-space: nowrap;
-}
-.dsh_me_field_value {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  padding: 0 8px;
-  font-size: 12px;
-  color: var(--dsw-alias-label-primary);
-  font-family: ui-monospace, "SF Mono", "Fira Code", monospace;
-  outline: none;
-}
 .dsh_me_toggle {
   flex: none;
   position: relative;

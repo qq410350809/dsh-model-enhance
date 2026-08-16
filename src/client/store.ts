@@ -1,8 +1,6 @@
 /**
- * Pure read/write logic for dsh-model-enhance, ported from the DSH Client
- * "模型增强" feature (Rust `get_model_config`/`save_model_config` + the overlay's
- * `render`/`collect`). No React, no DOM, no network — the node-safe build
- * (`lib/store.js`) and the browser bundle both import this.
+ * Pure read/write logic for dsh-model-enhance. No React, no DOM, no network —
+ * the node-safe build (`lib/store.js`) and the browser bundle both import this.
  *
  * - `readConfig` projects the raw `llm-pi-ai` section into the UI shape.
  * - `buildOps` diffs a collected UI config back into path-addressed settings
@@ -23,12 +21,6 @@ import {
 /** A JSON value is a plain object (not null/array) — what a `reasoningEfforts` dict is. */
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-/** Read a positive integer field, else null (UI's "unset" marker). */
-function positiveInt(value: unknown): number | null {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null
-  return Math.trunc(value)
 }
 
 /** Read a non-empty string field, else undefined. */
@@ -57,8 +49,6 @@ export function readModel(model: RawModelProfile): ModelEnhanceModel | null {
     id,
     enabled: dict !== undefined,
     efforts: effortKeysOf(model.reasoningEfforts),
-    context_window: positiveInt(model.contextWindow),
-    max_tokens: positiveInt(model.maxTokens),
   }
 }
 
@@ -171,24 +161,6 @@ export function buildOps(original: RawSection | undefined, next: ModelEnhanceCon
         }
       } else if (wasDict) {
         ops.push({ op: 'unset', path: [...base, 'reasoningEfforts'] })
-      }
-
-      // contextWindow
-      if (model.context_window === null) {
-        if (raw.contextWindow !== undefined) {
-          ops.push({ op: 'unset', path: [...base, 'contextWindow'] })
-        }
-      } else if (positiveInt(raw.contextWindow) !== model.context_window) {
-        ops.push({ op: 'set', path: [...base, 'contextWindow'], value: model.context_window })
-      }
-
-      // maxTokens
-      if (model.max_tokens === null) {
-        if (raw.maxTokens !== undefined) {
-          ops.push({ op: 'unset', path: [...base, 'maxTokens'] })
-        }
-      } else if (positiveInt(raw.maxTokens) !== model.max_tokens) {
-        ops.push({ op: 'set', path: [...base, 'maxTokens'], value: model.max_tokens })
       }
     })
   }

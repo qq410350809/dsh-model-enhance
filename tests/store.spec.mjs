@@ -10,8 +10,8 @@ const section = {
       api: 'openai-completions',
       baseURL: 'https://acme.example/v1',
       models: [
-        { id: 'model-a', contextWindow: 65536, reasoningEfforts: { off: null, high: 'high' } },
-        { id: 'model-b', contextWindow: 32768, maxTokens: 4096 },
+        { id: 'model-a', reasoningEfforts: { off: null, high: 'high' } },
+        { id: 'model-b' },
       ],
     },
     beta: {
@@ -34,14 +34,10 @@ test('readConfig projects providers/models/efforts', () => {
   assert.equal(a.id, 'model-a')
   assert.equal(a.enabled, true)
   assert.deepEqual(a.efforts, ['off', 'high'])
-  assert.equal(a.context_window, 65536)
-  assert.equal(a.max_tokens, null)
 
   const b = acme.models[1]
   assert.equal(b.enabled, false)
   assert.deepEqual(b.efforts, [])
-  assert.equal(b.context_window, 32768)
-  assert.equal(b.max_tokens, 4096)
 
   const beta = config.providers[1]
   assert.equal(beta.display_name, 'Beta')
@@ -56,7 +52,7 @@ test('buildOps yields no ops for an unchanged config', () => {
   assert.deepEqual(buildOps(section, config), [])
 })
 
-test('buildOps emits the minimal diff for edits', () => {
+test('buildOps emits the minimal diff for effort edits', () => {
   const config = readConfig(section)
   // acme/model-a: swap high -> max (off kept)
   config.providers[0].models[0].efforts = ['off', 'max']
@@ -82,30 +78,7 @@ test('buildOps emits the minimal diff for edits', () => {
 
   assert.ok(unset(['providers', 'beta', 'models', '0', 'reasoningEfforts']), 'model-c reasoningEfforts unset')
 
-  // contextWindow/maxTokens were not touched anywhere -> no capacity ops.
-  const capacityOps = ops.filter((op) => op.path[op.path.length - 1] === 'contextWindow' || op.path[op.path.length - 1] === 'maxTokens')
-  assert.deepEqual(capacityOps, [])
-})
-
-test('buildOps writes and removes capacities', () => {
-  const config = readConfig(section)
-  // model-a: change context, set maxTokens
-  config.providers[0].models[0].context_window = 200000
-  config.providers[0].models[0].max_tokens = 16000
-  // model-b: clear both
-  config.providers[0].models[1].context_window = null
-  config.providers[0].models[1].max_tokens = null
-
-  const ops = buildOps(section, config)
-  const setCtx = ops.find((op) => op.op === 'set' && deepEqualJson(op.path, ['providers', 'acme', 'models', '0', 'contextWindow']))
-  const setMax = ops.find((op) => op.op === 'set' && deepEqualJson(op.path, ['providers', 'acme', 'models', '0', 'maxTokens']))
-  const unsetCtx = ops.find((op) => op.op === 'unset' && deepEqualJson(op.path, ['providers', 'acme', 'models', '1', 'contextWindow']))
-  const unsetMax = ops.find((op) => op.op === 'unset' && deepEqualJson(op.path, ['providers', 'acme', 'models', '1', 'maxTokens']))
-
-  assert.equal(setCtx.value, 200000)
-  assert.equal(setMax.value, 16000)
-  assert.ok(unsetCtx, 'model-b contextWindow removed')
-  assert.ok(unsetMax, 'model-b maxTokens removed')
+  assert.equal(ops.length, 3)
 })
 
 test('renderEfforts preserves custom wire spellings', () => {

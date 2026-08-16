@@ -1,6 +1,6 @@
 {
   "name": "dsh-model-enhance",
-  "description": "模型增强：在 DSH Web 设置页按模型编辑 reasoningEfforts / contextWindow / maxTokens（移植自 DSH Client 的「模型增强」菜单）",
+  "description": "模型增强：在 DSH Web 设置页按模型编辑推理强度（reasoningEfforts）",
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",

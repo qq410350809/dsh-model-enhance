@@ -6,8 +6,6 @@ section to the DSH Web settings page for editing, per provider and model:
 - **Reasoning efforts** (`reasoningEfforts`) — an enable toggle plus a
   multi-select of levels (off / minimal / low / medium / high / xhigh / max),
   covering every thinking level DSH's `llm-pi-ai` adapter accepts.
-- **Context window** (`contextWindow`)
-- **Max output tokens** (`maxTokens`)
 
 Changes apply live (the `llm-pi-ai` namespace registers with `live` semantics)
 and every unrelated key in the section is preserved.
