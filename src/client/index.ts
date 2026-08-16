@@ -14,16 +14,16 @@ import type {} from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: brings the `settings.section` SlotMap augmentation (declared by the
 // settings domain base plugin) into this program.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import { SETTINGS_NS, type RawSection, type SettingsWireFace } from '../contract.ts'
+import { SETTINGS_NS, type SettingsWireFace } from '../contract.ts'
 import { ModelEnhanceSection, type ModelEnhanceSectionInjected } from './ModelEnhanceSection.tsx'
 import { NS, en, zh } from './locales.ts'
 import { readProviderLabel, subscribeProviderLabel } from './prefs.ts'
 import { installProviderLabelBadges } from './providerLabel.ts'
-import { providerLabelsOf } from './store.ts'
+import { providerBadgeOf, type ProviderBadge, type ProviderBadgeInput } from './store.ts'
 import { adoptStyles } from './styles.ts'
 
-/** Required services: settings section slot, locale, wire connection, and pushed invalidations. */
-export const inject = ['slots', 'locale', 'connection', 'remote']
+/** Required services: settings section slot, locale, wire connection, pushed invalidations, and the model directory. */
+export const inject = ['slots', 'locale', 'connection', 'remote', 'sessions', 'modelDirectories']
 
 /** The connection service face this plugin reaches (structural). */
 interface ConnectionHandleLike {
@@ -33,6 +33,24 @@ interface ConnectionHandleLike {
 /** The remote service face this plugin reaches (structural). */
 interface RemoteFaceLike {
   $on(event: string, handler: (payload?: unknown) => void): () => void
+}
+
+/** The sessions-service face this plugin reaches (structural): the current session id. */
+interface SessionsFaceLike {
+  list: {
+    getSnapshot(): { current?: string }
+    subscribe(fn: () => void): () => void
+  }
+}
+
+/** The model-directory service face this plugin reaches (structural): the current session's directory store. */
+interface ModelDirectoriesFaceLike {
+  directoryFor(sessionId: string): {
+    store: {
+      getSnapshot(): ProviderBadgeInput
+      subscribe(fn: () => void): () => void
+    }
+  }
 }
 
 /**
@@ -45,20 +63,54 @@ export function apply(ctx: ClientContext): void {
 
   const connection = ctx.get('connection') as ConnectionHandleLike
   const remote = ctx.get('remote') as RemoteFaceLike
+  const sessions = ctx.get('sessions') as SessionsFaceLike
+  const modelDirectories = ctx.get('modelDirectories') as ModelDirectoriesFaceLike
   const t = ctx.locale.bind(NS)
 
-  // Provider labels for the model-selector badges: model id/name → provider
-  // display name, projected from the same `llm-pi-ai` section the page edits.
-  let labels: Record<string, string> = {}
-  const refreshLabels = async (): Promise<void> => {
+  // The provider badge for the current session's selection, read live from the
+  // model directory. Keying off `current.provider` (not the model label) is what
+  // makes a model served by several providers resolve to the right one.
+  const readBadge = (): ProviderBadge | undefined => {
+    const sessionId = sessions.list.getSnapshot().current
+    if (sessionId === undefined) return undefined
     try {
-      const response = await connection.api.settings.describe({})
-      if (!response.result.ok) return
-      const view = response.result.value.namespaces.find((n) => n.ns === SETTINGS_NS)
-      if (view === undefined) return
-      labels = providerLabelsOf((view.user ?? view.value) as RawSection | undefined)
+      const directory = modelDirectories.directoryFor(sessionId)
+      return providerBadgeOf(directory.store.getSnapshot())
     } catch {
-      // Transient transport failure: badges keep the last good labels.
+      // Session scope not minted yet; the sessions.list subscription retries.
+      return undefined
+    }
+  }
+
+  // Re-patch when the current session changes or its directory store changes,
+  // covering selection switches that mutate no trigger text (two providers
+  // sharing a model name).
+  const subscribeBadgeChanges = (onChange: () => void): () => void => {
+    let offDirectory: (() => void) | null = null
+    let bound: string | undefined
+
+    const resync = (): void => {
+      const sessionId = sessions.list.getSnapshot().current
+      if (sessionId !== bound || (sessionId !== undefined && offDirectory === null)) {
+        bound = sessionId
+        offDirectory?.()
+        offDirectory = null
+        if (sessionId !== undefined) {
+          try {
+            offDirectory = modelDirectories.directoryFor(sessionId).store.subscribe(onChange)
+          } catch {
+            // Scope not minted yet; a later sessions.list notification retries.
+          }
+        }
+      }
+      onChange()
+    }
+
+    resync()
+    const offSessions = sessions.list.subscribe(resync)
+    return () => {
+      offSessions()
+      offDirectory?.()
     }
   }
 
@@ -68,7 +120,7 @@ export function apply(ctx: ClientContext): void {
   const syncBadges = (): void => {
     const enabled = readProviderLabel()
     if (enabled && badgesDispose === null) {
-      badgesDispose = installProviderLabelBadges(() => labels)
+      badgesDispose = installProviderLabelBadges(readBadge, subscribeBadgeChanges)
     } else if (!enabled && badgesDispose !== null) {
       badgesDispose()
       badgesDispose = null
@@ -76,19 +128,10 @@ export function apply(ctx: ClientContext): void {
   }
 
   ctx.effect(() => {
-    void refreshLabels().then(syncBadges)
-    const disposers = [
-      subscribeProviderLabel(syncBadges),
-      remote.$on('settings/document-updated', () => {
-        void refreshLabels().then(syncBadges)
-      }),
-      ctx.on('connection/reset', () => {
-        labels = {}
-        void refreshLabels().then(syncBadges)
-      }),
-    ]
+    syncBadges()
+    const offToggle = subscribeProviderLabel(syncBadges)
     return () => {
-      for (const dispose of disposers) dispose()
+      offToggle()
       if (badgesDispose !== null) {
         badgesDispose()
         badgesDispose = null

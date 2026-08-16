@@ -78,29 +78,38 @@ export function readConfig(section: RawSection | undefined): ModelEnhanceConfig 
   return { providers }
 }
 
+/** Structural view of the model-directory snapshot the provider badge reads. */
+export interface ProviderBadgeInput {
+  /** The selection the host reports for the session; null before the first load. */
+  current: { provider: string; model: string } | null
+  /** Successfully loaded provider groups (provider route + display name + models). */
+  groups: ReadonlyArray<{ id: string; name: string; models: ReadonlyArray<{ id: string; name: string }> }>
+}
+
+/** The badge state: which trigger label to match and which provider name to show. */
+export interface ProviderBadge {
+  /** Display name of the currently selected model (matches the trigger's label). */
+  modelLabel: string
+  /** Display name of the provider serving that model. */
+  providerName: string
+}
+
 /**
- * Build the model-label → provider display-name map the model-selector badge
- * reads. Keys cover both the configured model `id` and its optional display
- * `name`, so whichever label the selector shows resolves to the provider.
+ * Resolve the provider badge from a model-directory snapshot. Unlike a flat
+ * model-label → provider map, this keys off the *current selection's route*
+ * (`current.provider`), so a model served by several providers at once resolves
+ * to the provider that actually serves the selected route, never to whichever
+ * entry happened to win a name collision. The trigger is matched by the current
+ * model's display name (`name ?? id`, mirroring the selector's own resolution).
  */
-export function providerLabelsOf(section: RawSection | undefined): Record<string, string> {
-  const labels: Record<string, string> = {}
-  const providerMap = section?.providers
-  if (isPlainObject(providerMap)) {
-    for (const [name, value] of Object.entries(providerMap)) {
-      const profile = isPlainObject(value) ? value : {}
-      const display_name = nonEmptyString(profile.displayName) ?? name
-      if (!Array.isArray(profile.models)) continue
-      for (const entry of profile.models) {
-        if (!isPlainObject(entry)) continue
-        const id = nonEmptyString(entry.id)
-        const modelName = nonEmptyString(entry.name)
-        if (id !== undefined) labels[id] = display_name
-        if (modelName !== undefined) labels[modelName] = display_name
-      }
-    }
-  }
-  return labels
+export function providerBadgeOf(directory: ProviderBadgeInput): ProviderBadge | undefined {
+  const current = directory.current
+  if (current === null) return undefined
+  const group = directory.groups.find((candidate) => candidate.id === current.provider)
+  const providerName = group?.name ?? current.provider
+  const model = group?.models.find((candidate) => candidate.id === current.model)
+  const modelLabel = model?.name ?? current.model
+  return { modelLabel, providerName }
 }
 
 /**

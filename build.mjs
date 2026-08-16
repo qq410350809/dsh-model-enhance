@@ -15,10 +15,15 @@
 import { build } from 'esbuild'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
 mkdirSync('lib', { recursive: true })
 
 const dshExternal = ['@deepseek-ai/cordis', '@deepseek-ai/dsh-*']
+
+// The client handshake id must match the loader entry name in dsh.plugin.json,
+// which differs from the npm package name (scoped vs unscoped).
+const pluginName = JSON.parse(readFileSync('dsh.plugin.json', 'utf8')).name
 
 await build({
   entryPoints: ['src/index.ts'],
@@ -55,7 +60,7 @@ await build({
   jsx: 'automatic',
   external: [...dshExternal, 'react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'scheduler'],
   banner: {
-    js: "window.__ModuleLoader__.load({ id: '@qq410350809/dsh-model-enhance', factory: (require) => { var module = { exports: {} }; var exports = module.exports;",
+    js: `window.__ModuleLoader__.load({ id: '${pluginName}', factory: (require) => { var module = { exports: {} }; var exports = module.exports;`,
   },
   footer: {
     js: 'return module.exports; } });',

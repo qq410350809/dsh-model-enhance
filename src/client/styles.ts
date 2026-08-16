@@ -19,6 +19,18 @@ export const cssText = `
   gap: 4px;
   min-width: 0;
 }
+.dsh_me_head_row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dsh_me_icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--dsw-alias-brand-primary);
+}
 .dsh_me_title {
   margin: 0;
   color: var(--dsw-alias-label-primary);

@@ -7,7 +7,7 @@
  * provider badge in the model selector immediately.
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
-/** Required services: settings section slot, locale, wire connection, and pushed invalidations. */
+/** Required services: settings section slot, locale, wire connection, pushed invalidations, and the model directory. */
 export declare const inject: string[];
 /**
  * Compose the model-enhance settings surface and the provider-label badges.

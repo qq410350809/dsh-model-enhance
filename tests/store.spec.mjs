@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildOps, deepEqualJson, providerLabelsOf, readConfig, renderEfforts } from '../lib/store.js'
+import { buildOps, deepEqualJson, providerBadgeOf, readConfig, renderEfforts } from '../lib/store.js'
 
 const section = {
   providers: {
@@ -91,13 +91,29 @@ test('buildOps preserves hand-declared reasoningEfforts: false', () => {
   assert.deepEqual(buildOps(raw, config), [])
 })
 
-test('providerLabelsOf maps model ids/names to provider display names', () => {
-  const labels = providerLabelsOf(section)
-  assert.equal(labels['model-a'], 'ACME AI')
-  assert.equal(labels['Model A'], 'ACME AI')
-  assert.equal(labels['model-b'], 'ACME AI')
-  assert.equal(labels['model-c'], 'Beta')
-  assert.deepEqual(providerLabelsOf(undefined), {})
+test('providerBadgeOf resolves the current selection to its own provider', () => {
+  // The same model id (deepseek-v4-pro) is served by two providers. The badge
+  // must follow `current.provider`, not whichever group happened to win a name
+  // collision.
+  const directory = {
+    current: { provider: 'gateway', model: 'deepseek-v4-pro' },
+    groups: [
+      { id: 'deepseek-official', name: 'DeepSeek', models: [{ id: 'deepseek-v4-pro', name: 'DeepSeek-V4-Pro' }] },
+      { id: 'gateway', name: 'My Gateway', models: [{ id: 'deepseek-v4-pro', name: 'deepseek-v4-pro' }] },
+    ],
+  }
+  assert.deepEqual(providerBadgeOf(directory), { modelLabel: 'deepseek-v4-pro', providerName: 'My Gateway' })
+})
+
+test('providerBadgeOf falls back to ids and is undefined before load', () => {
+  assert.deepEqual(providerBadgeOf({ current: null, groups: [] }), undefined)
+
+  // Model not in the (advisory) catalog still resolves by id.
+  const directory = {
+    current: { provider: 'deepseek-official', model: 'some-new-model' },
+    groups: [{ id: 'deepseek-official', name: 'DeepSeek', models: [] }],
+  }
+  assert.deepEqual(providerBadgeOf(directory), { modelLabel: 'some-new-model', providerName: 'DeepSeek' })
 })
 
 test('renderEfforts preserves custom wire spellings', () => {

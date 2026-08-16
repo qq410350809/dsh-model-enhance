@@ -16,12 +16,39 @@ export declare function readModel(model: RawModelProfile): ModelEnhanceModel | n
  * `namespace.user ?? namespace.value` as the section.
  */
 export declare function readConfig(section: RawSection | undefined): ModelEnhanceConfig;
+/** Structural view of the model-directory snapshot the provider badge reads. */
+export interface ProviderBadgeInput {
+    /** The selection the host reports for the session; null before the first load. */
+    current: {
+        provider: string;
+        model: string;
+    } | null;
+    /** Successfully loaded provider groups (provider route + display name + models). */
+    groups: ReadonlyArray<{
+        id: string;
+        name: string;
+        models: ReadonlyArray<{
+            id: string;
+            name: string;
+        }>;
+    }>;
+}
+/** The badge state: which trigger label to match and which provider name to show. */
+export interface ProviderBadge {
+    /** Display name of the currently selected model (matches the trigger's label). */
+    modelLabel: string;
+    /** Display name of the provider serving that model. */
+    providerName: string;
+}
 /**
- * Build the model-label → provider display-name map the model-selector badge
- * reads. Keys cover both the configured model `id` and its optional display
- * `name`, so whichever label the selector shows resolves to the provider.
+ * Resolve the provider badge from a model-directory snapshot. Unlike a flat
+ * model-label → provider map, this keys off the *current selection's route*
+ * (`current.provider`), so a model served by several providers at once resolves
+ * to the provider that actually serves the selected route, never to whichever
+ * entry happened to win a name collision. The trigger is matched by the current
+ * model's display name (`name ?? id`, mirroring the selector's own resolution).
  */
-export declare function providerLabelsOf(section: RawSection | undefined): Record<string, string>;
+export declare function providerBadgeOf(directory: ProviderBadgeInput): ProviderBadge | undefined;
 /**
  * Render the `reasoningEfforts` dict for a newly collected set of levels.
  * Preserves an existing level's wire spelling (e.g. `max: ultra`) and defaults
