@@ -1,10 +1,7 @@
 # dsh-model-enhance
 
-Ports the DSH Client (Tauri) "模型增强" (Model enhance) menu into a DeepSeek
-Harness (DSH) web plugin.
-
-It adds a "Model enhance" section to the DSH Web settings page for editing, per
-provider and model:
+A DeepSeek Harness (DSH) web plugin that adds a "Model enhance" (模型增强)
+section to the DSH Web settings page for editing, per provider and model:
 
 - **Reasoning efforts** (`reasoningEfforts`) — an enable toggle plus a
   multi-select of levels (off / minimal / low / medium / high / xhigh / max),
@@ -17,9 +14,8 @@ and every unrelated key in the section is preserved.
 
 ## How it works
 
-The original Tauri client read and wrote the `llm-pi-ai.providers` section of
-`~/.dsh/settings.yaml` directly. DSH already exposes that section as a settings
-namespace of the same name (`llm-pi-ai`, registered by `dsh-llm-pi-ai` through
+The `llm-pi-ai.providers` section is exposed by DSH as a settings namespace of
+the same name (`llm-pi-ai`, registered by `dsh-llm-pi-ai` through
 `installSettingsSection`), so this plugin needs **no host-side logic**:
 
 - the host half is an empty registration marker (`src/index.ts`) that puts the

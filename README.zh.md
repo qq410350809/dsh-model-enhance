@@ -1,8 +1,6 @@
 # dsh-model-enhance
 
-把 DSH Client（Tauri 应用）的「模型增强」菜单移植为 DeepSeek Harness（DSH）的 Web 插件。
-
-在 DSH Web 的设置页新增一个「模型增强」板块，按提供方与模型编辑：
+在 DeepSeek Harness（DSH）Web 设置页新增「模型增强」板块的插件，按提供方与模型编辑：
 
 - **推理强度**（`reasoningEfforts`）——开关 + 多选等级（off / minimal / low / medium / high / xhigh / max），对应 DSH `llm-pi-ai` 适配器接受的全部思维等级。
 - **上下文窗口**（`contextWindow`）
@@ -12,7 +10,7 @@
 
 ## 工作原理
 
-原 Tauri 客户端直接读写 `~/.dsh/settings.yaml` 的 `llm-pi-ai.providers` 一节。DSH 已经把这一节暴露为同名设置命名空间（`llm-pi-ai`，由 `dsh-llm-pi-ai` 通过 `installSettingsSection` 注册），所以本插件**不需要任何 host 端逻辑**：
+`llm-pi-ai.providers` 这一节由 DSH 暴露为同名设置命名空间（`llm-pi-ai`，由 `dsh-llm-pi-ai` 通过 `installSettingsSection` 注册），所以本插件**不需要任何 host 端逻辑**：
 
 - host 端只是一个空的注册标记（`src/index.ts`），让该包进入 host Loader 与客户端 boot graph；
 - 浏览器端（`src/client/**`）通过 `connection.api.settings.describe` / `settings.mutate` 读写 `llm-pi-ai` 命名空间，并通过 `settings.section` slot 注册设置页板块。
@@ -25,7 +23,7 @@ src/
   contract.ts                  # 共享类型与常量（纯 TS，无 React/DOM）
   client/
     index.ts                   # 客户端插件入口（slot + locale + 失效订阅）
-    store.ts                   # 纯逻辑：readConfig / buildOps（移植自 Rust 读写）
+    store.ts                   # 纯逻辑：readConfig / buildOps
     ModelEnhanceSection.tsx    # 设置页 React 组件
     styles.ts                  # 注入的样式表（--dsw-alias-* 设计令牌）
     locales.ts                 # 中英文字典
