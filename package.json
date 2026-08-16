@@ -1,7 +1,7 @@
 {
   "name": "@qq410350809/dsh-model-enhance",
   "description": "模型增强：编辑推理强度（reasoningEfforts）与模型选择器接入方显示模式",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "type": "module",
   "repository": {
