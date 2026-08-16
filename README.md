@@ -58,7 +58,13 @@ node --test tests/*.spec.mjs
 
 ## Install into the web profile
 
-Install directly from GitHub (the repo ships the built `lib/`):
+Install from the npm registry (published as `@qq410350809/dsh-model-enhance`):
+
+```sh
+dsh plugin --profile web add @qq410350809/dsh-model-enhance
+```
+
+or from the GitHub tag (the repo ships the built `lib/`):
 
 ```sh
 dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/tags/v0.1.0.tar.gz

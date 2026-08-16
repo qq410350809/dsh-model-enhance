@@ -1,9 +1,14 @@
 {
-  "name": "dsh-model-enhance",
+  "name": "@qq410350809/dsh-model-enhance",
   "description": "模型增强：编辑推理强度（reasoningEfforts）与模型选择器接入方显示模式",
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qq410350809/dsh-model-enhance.git"
+  },
+  "homepage": "https://github.com/qq410350809/dsh-model-enhance",
   "main": "lib/index.js",
   "exports": {
     ".": {
@@ -42,6 +47,7 @@
   ],
   "scripts": {
     "build": "node build.mjs",
+    "prepublishOnly": "node build.mjs",
     "typecheck": "tsc --noEmit",
     "link:types": "bash scripts/link-types.sh",
     "test": "node --test tests/*.spec.mjs"

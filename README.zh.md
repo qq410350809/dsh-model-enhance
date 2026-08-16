@@ -46,7 +46,13 @@ node --test tests/*.spec.mjs   # 运行单元测试
 
 ## 安装到 Web profile
 
-直接从 GitHub 安装（推荐，仓库已含编译好的 `lib/`）：
+从 npm 安装（已发布为 `@qq410350809/dsh-model-enhance`）：
+
+```sh
+dsh plugin --profile web add @qq410350809/dsh-model-enhance
+```
+
+或从 GitHub tag 安装（仓库已含编译好的 `lib/`）：
 
 ```sh
 dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/tags/v0.1.0.tar.gz
@@ -59,14 +65,14 @@ dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/ar
 ```jsonc
 {
   "dependencies": {
-    "dsh-model-enhance": "https://github.com/qq410350809/dsh-model-enhance/archive/refs/tags/v0.1.0.tar.gz"
+    "@qq410350809/dsh-model-enhance": "^0.1.0"
   },
   "dsh": {
     "profile": {
       "bundles": [
         "@deepseek-ai/dsh-base",
         "@deepseek-ai/dsh-web-app",
-        "dsh-model-enhance"
+        "@qq410350809/dsh-model-enhance"
       ]
     }
   }
