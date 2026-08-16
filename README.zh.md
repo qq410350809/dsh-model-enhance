@@ -50,15 +50,17 @@ node --test tests/*.spec.mjs   # 运行单元测试
 直接从 GitHub 安装（推荐，仓库已含编译好的 `lib/`）：
 
 ```sh
-dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/heads/main.tar.gz
+dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/tags/v0.1.0.tar.gz
 ```
+
+> 请固定到 tag 而不是 `main`：`refs/heads/main` 的 tarball 每次 push 都会变，会导致后续 `pnpm install` 的 lockfile 校验和报错。
 
 或在 `~/.dsh/profiles/web/package.json` 手工添加依赖与 bundle 条目：
 
 ```jsonc
 {
   "dependencies": {
-    "dsh-model-enhance": "https://github.com/qq410350809/dsh-model-enhance/archive/refs/heads/main.tar.gz"
+    "dsh-model-enhance": "https://github.com/qq410350809/dsh-model-enhance/archive/refs/tags/v0.1.0.tar.gz"
   },
   "dsh": {
     "profile": {

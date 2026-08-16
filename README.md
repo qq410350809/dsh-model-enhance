@@ -60,8 +60,11 @@ node --test tests/*.spec.mjs
 Install directly from GitHub (the repo ships the built `lib/`):
 
 ```sh
-dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/heads/main.tar.gz
+dsh plugin --profile web add https://github.com/qq410350809/dsh-model-enhance/archive/refs/tags/v0.1.0.tar.gz
 ```
+
+> Pin a tag, not `main`: a `refs/heads/main` tarball changes on every push and
+> breaks pnpm's lockfile checksum on later installs.
 
 or edit `~/.dsh/profiles/web/package.json` directly (see README.zh.md), run
 `pnpm install` in that profile, and restart `dsh web`.
