@@ -1,0 +1,12 @@
+{
+  "name": "dsh-model-enhance",
+  "description": "模型增强：按模型编辑 reasoningEfforts / contextWindow / maxTokens",
+  "version": "0.1.0",
+  "entry": {
+    "name": "dsh-model-enhance",
+    "inject": []
+  },
+  "client": {
+    "platform": "web"
+  }
+}

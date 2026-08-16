@@ -1,0 +1,7 @@
+# dsh-model-enhance bundle patch: insert the host marker entry so this package
+# appears in the host Loader (and therefore in the client boot graph). The
+# browser half ships through exports["./client"], discovered from the
+# package.json `dsh.client` declaration.
+- insert:
+    - id: dsh-model-enhance
+      name: dsh-model-enhance

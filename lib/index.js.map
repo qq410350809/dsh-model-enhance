@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/index.ts"],
+  "sourcesContent": ["/**\n * dsh-model-enhance host plugin \u2014 a pure registration marker. The feature is\n * entirely browser-side: it edits the `llm-pi-ai` settings namespace through\n * the settings wire API, so no host behavior is needed. The empty `apply` keeps\n * this row in the host Loader (and therefore in the client boot graph); the\n * browser half ships through `exports[\"./client\"]`, discovered from the\n * package.json `dsh.client` declaration.\n */\nimport type { Context } from '@deepseek-ai/cordis'\n\n/** Cordis plugin name (the Loader entry and client bundle id). */\nexport const name = 'dsh-model-enhance'\n\n/** Services required before load \u2014 none host-side. */\nexport const inject: string[] = []\n\n/**\n * Mount nothing host-side.\n * @param _ctx - host cordis context (unused).\n */\nexport function apply(_ctx: Context): void {}\n"],
+  "mappings": ";AAWO,IAAM,OAAO;AAGb,IAAM,SAAmB,CAAC;AAM1B,SAAS,MAAM,MAAqB;AAAC;",
+  "names": []
+}
