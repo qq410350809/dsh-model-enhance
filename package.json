@@ -6,7 +6,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/qq410350809/dsh-model-enhance.git"
+    "url": "git+https://github.com/qq410350809/dsh-model-enhance.git"
   },
   "homepage": "https://github.com/qq410350809/dsh-model-enhance",
   "main": "lib/index.js",
