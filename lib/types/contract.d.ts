@@ -10,13 +10,6 @@
  */
 /** The settings namespace this plugin edits. */
 export declare const SETTINGS_NS = "llm-pi-ai";
-/** This plugin's own UI-preference settings namespace (registered host-side). */
-export declare const PROVIDER_LABEL_NS = "dsh-model-enhance";
-/** Durable preferences for the model-enhance plugin. */
-export interface ModelEnhancePrefs {
-    /** Show the provider-name badge before the model label in the model selector. */
-    providerLabel: boolean;
-}
 /**
  * Every reasoning level DSH's pi-ai adapter accepts, in escalation order.
  * The original Tauri client omitted `minimal`; DSH's `THINKING_LEVELS` includes

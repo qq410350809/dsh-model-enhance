@@ -2,23 +2,22 @@
  * The settings-page section for model enhancement: per-provider collapsible
  * cards, each row exposing an enable toggle and multi-select reasoning-effort
  * chips, plus the provider-label switch that gates the model-selector badges.
- * The `llm-pi-ai` namespace rides the settings wire API; the switch lives in
- * the plugin's own preference namespace.
+ * The `llm-pi-ai` namespace rides the settings wire API; the switch is a
+ * localStorage preference.
  */
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import {
   SETTINGS_NS,
   type EffortLevel,
   type ModelEnhanceConfig,
   type ModelEnhanceModel,
-  type ModelEnhancePrefs,
   type ModelEnhanceProvider,
   type RawSection,
   type SettingsWireFace,
 } from '../contract.ts'
 import { buildOps, readConfig } from './store.ts'
+import { readProviderLabel, writeProviderLabel } from './prefs.ts'
 import type { ModelEnhanceKey } from './locales.ts'
 
 /** The namespace-bound translate function shared by the section and its rows. */
@@ -35,11 +34,9 @@ const EFFORT_META: ReadonlyArray<{ key: EffortLevel; color: string }> = [
   { key: 'max', color: '#ef4444' },
 ]
 
-/** Injected business face: the settings wire API, the preference scope, and a live-refresh subscription. */
+/** Injected business face: the settings wire API plus a live-refresh subscription. */
 export interface ModelEnhanceSectionInjected {
   api: { settings: SettingsWireFace }
-  /** The plugin's preference scope (hosts the provider-label switch). */
-  prefs: SettingsScope<ModelEnhancePrefs>
   /** Subscribe to external changes; the returned disposer unsubscribes. */
   onInvalidate: (reload: () => void) => () => void
 }
@@ -100,7 +97,7 @@ function patchModel(
 /** Default efforts applied when a model is turned on with none selected. */
 const DEFAULT_EFFORTS: EffortLevel[] = ['off', 'low', 'medium']
 
-export function ModelEnhanceSection({ api, prefs, t, onInvalidate }: ModelEnhanceSectionProps) {
+export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectionProps) {
   const [state, setState] = useState<SectionState>(INITIAL)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -136,16 +133,12 @@ export function ModelEnhanceSection({ api, prefs, t, onInvalidate }: ModelEnhanc
 
   useEffect(() => {
     void load()
-    setState((s) => ({ ...s, providerLabel: prefs.getSnapshot().value?.providerLabel ?? false }))
+    setState((s) => ({ ...s, providerLabel: readProviderLabel() }))
     const offInvalidate = onInvalidate(() => {
       void load()
     })
-    const offPrefs = prefs.subscribe(() => {
-      setState((s) => ({ ...s, providerLabel: prefs.getSnapshot().value?.providerLabel ?? false }))
-    })
     return () => {
       offInvalidate()
-      offPrefs()
       if (toastTimer.current !== undefined) clearTimeout(toastTimer.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,14 +185,10 @@ export function ModelEnhanceSection({ api, prefs, t, onInvalidate }: ModelEnhanc
     setState((s) => ({ ...s, config: patchModel(s.config, providerName, modelId, { efforts }) }))
   }
 
-  const toggleProviderLabel = async (): Promise<void> => {
-    const next = !(prefs.getSnapshot().value?.providerLabel ?? false)
+  const toggleProviderLabel = (): void => {
+    const next = !readProviderLabel()
     setState((s) => ({ ...s, providerLabel: next }))
-    try {
-      await prefs.set('providerLabel', next)
-    } catch (error) {
-      showToast(`${t('saveFailed')}: ${messageOf(error)}`, true)
-    }
+    writeProviderLabel(next)
   }
 
   if (state.status === 'loading') {
