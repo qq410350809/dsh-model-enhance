@@ -1,16 +1,19 @@
 /**
  * The settings-page section for model enhancement: per-provider collapsible
  * cards, each row exposing an enable toggle and multi-select reasoning-effort
- * chips, reading and writing the `llm-pi-ai` namespace through the settings
- * wire API.
+ * chips, plus the provider-label switch that gates the model-selector badges.
+ * The `llm-pi-ai` namespace rides the settings wire API; the switch lives in
+ * the plugin's own preference namespace.
  */
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import {
   SETTINGS_NS,
   type EffortLevel,
   type ModelEnhanceConfig,
   type ModelEnhanceModel,
+  type ModelEnhancePrefs,
   type ModelEnhanceProvider,
   type RawSection,
   type SettingsWireFace,
@@ -32,9 +35,11 @@ const EFFORT_META: ReadonlyArray<{ key: EffortLevel; color: string }> = [
   { key: 'max', color: '#ef4444' },
 ]
 
-/** Injected business face: the settings wire API plus a live-refresh subscription. */
+/** Injected business face: the settings wire API, the preference scope, and a live-refresh subscription. */
 export interface ModelEnhanceSectionInjected {
   api: { settings: SettingsWireFace }
+  /** The plugin's preference scope (hosts the provider-label switch). */
+  prefs: SettingsScope<ModelEnhancePrefs>
   /** Subscribe to external changes; the returned disposer unsubscribes. */
   onInvalidate: (reload: () => void) => () => void
 }
@@ -54,6 +59,7 @@ interface SectionState {
   config: ModelEnhanceConfig
   saving: boolean
   toast: { text: string; error: boolean } | null
+  providerLabel: boolean
 }
 
 const INITIAL: SectionState = {
@@ -65,6 +71,7 @@ const INITIAL: SectionState = {
   config: { providers: [] },
   saving: false,
   toast: null,
+  providerLabel: false,
 }
 
 function messageOf(error: unknown): string {
@@ -93,7 +100,7 @@ function patchModel(
 /** Default efforts applied when a model is turned on with none selected. */
 const DEFAULT_EFFORTS: EffortLevel[] = ['off', 'low', 'medium']
 
-export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectionProps) {
+export function ModelEnhanceSection({ api, prefs, t, onInvalidate }: ModelEnhanceSectionProps) {
   const [state, setState] = useState<SectionState>(INITIAL)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -129,11 +136,16 @@ export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectio
 
   useEffect(() => {
     void load()
+    setState((s) => ({ ...s, providerLabel: prefs.getSnapshot().value?.providerLabel ?? false }))
     const offInvalidate = onInvalidate(() => {
       void load()
     })
+    const offPrefs = prefs.subscribe(() => {
+      setState((s) => ({ ...s, providerLabel: prefs.getSnapshot().value?.providerLabel ?? false }))
+    })
     return () => {
       offInvalidate()
+      offPrefs()
       if (toastTimer.current !== undefined) clearTimeout(toastTimer.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,6 +192,16 @@ export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectio
     setState((s) => ({ ...s, config: patchModel(s.config, providerName, modelId, { efforts }) }))
   }
 
+  const toggleProviderLabel = async (): Promise<void> => {
+    const next = !(prefs.getSnapshot().value?.providerLabel ?? false)
+    setState((s) => ({ ...s, providerLabel: next }))
+    try {
+      await prefs.set('providerLabel', next)
+    } catch (error) {
+      showToast(`${t('saveFailed')}: ${messageOf(error)}`, true)
+    }
+  }
+
   if (state.status === 'loading') {
     return <p className="dsh_me_empty">{t('loading')}</p>
   }
@@ -196,6 +218,21 @@ export function ModelEnhanceSection({ api, t, onInvalidate }: ModelEnhanceSectio
       <div className="dsh_me_head">
         <h2 id="dsh-model-enhance-title" className="dsh_me_title">{t('title')}</h2>
         <p className="dsh_me_subtitle">{t('subtitle')}</p>
+      </div>
+
+      <div className="dsh_me_pref">
+        <div className="dsh_me_pref_text">
+          <span className="dsh_me_pref_title">{t('providerLabel')}</span>
+          <span className="dsh_me_pref_desc">{t('providerLabelDesc')}</span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={state.providerLabel}
+          className={`dsh_me_toggle${state.providerLabel ? ' dsh_me_toggle_on' : ''}`}
+          title={state.providerLabel ? t('providerLabelOn') : t('providerLabelOff')}
+          onClick={() => void toggleProviderLabel()}
+        />
       </div>
 
       <div className="dsh_me_actions">

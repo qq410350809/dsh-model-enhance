@@ -1,6 +1,6 @@
 {
   "name": "dsh-model-enhance",
-  "description": "模型增强：在 DSH Web 设置页按模型编辑推理强度（reasoningEfforts）",
+  "description": "模型增强：编辑推理强度（reasoningEfforts）与模型选择器接入方显示模式",
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",
@@ -27,6 +27,7 @@
         "@deepseek-ai/dsh-client-ui-slots",
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-api-remotes"
       ]
     }
@@ -52,6 +53,9 @@
     "@deepseek-ai/dsh-client-ui-slots": "*",
     "@deepseek-ai/dsh-client-locale": "*",
     "@deepseek-ai/dsh-client-connection": "*",
+    "@deepseek-ai/dsh-client-ui-settings": "*",
+    "@deepseek-ai/dsh-settings": "*",
+    "@deepseek-ai/schemastery": "*",
     "react": "^18.2.0"
   },
   "peerDependenciesMeta": {
@@ -61,6 +65,9 @@
     "@deepseek-ai/dsh-client-ui-slots": { "optional": true },
     "@deepseek-ai/dsh-client-locale": { "optional": true },
     "@deepseek-ai/dsh-client-connection": { "optional": true },
+    "@deepseek-ai/dsh-client-ui-settings": { "optional": true },
+    "@deepseek-ai/dsh-settings": { "optional": true },
+    "@deepseek-ai/schemastery": { "optional": true },
     "react": { "optional": true }
   },
   "devDependencies": {

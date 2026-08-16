@@ -1,21 +1,32 @@
 /**
- * dsh-model-enhance host plugin — a pure registration marker. The feature is
- * entirely browser-side: it edits the `llm-pi-ai` settings namespace through
- * the settings wire API, so no host behavior is needed. The empty `apply` keeps
- * this row in the host Loader (and therefore in the client boot graph); the
- * browser half ships through `exports["./client"]`, discovered from the
- * package.json `dsh.client` declaration.
+ * dsh-model-enhance host plugin. Registers the plugin's own UI-preference
+ * settings namespace (`dsh-model-enhance`, currently the provider-label
+ * switch) so the browser half can persist the toggle through the settings
+ * wire. Everything else is browser-side: the section edits the `llm-pi-ai`
+ * namespace and the provider-label badges are pure DOM.
  */
 import type { Context } from '@deepseek-ai/cordis'
+import z from '@deepseek-ai/schemastery'
+// Type-only: brings the `ctx.settings` Context merge into this program.
+import type {} from '@deepseek-ai/dsh-settings'
+import { settingsNamespace } from '@deepseek-ai/dsh-settings'
+import { PROVIDER_LABEL_NS, type ModelEnhancePrefs } from './contract.ts'
 
 /** Cordis plugin name (the Loader entry and client bundle id). */
 export const name = 'dsh-model-enhance'
 
-/** Services required before load — none host-side. */
-export const inject: string[] = []
+/** Services required before load: the settings provider (registers the pref namespace). */
+export const inject = ['settings']
+
+/** Schemastery schema of the plugin's UI-preference namespace. */
+const PrefsSchema: z<ModelEnhancePrefs> = z.object({
+  providerLabel: z.boolean().default(false),
+})
 
 /**
- * Mount nothing host-side.
- * @param _ctx - host cordis context (unused).
+ * Register the preference namespace with the settings provider.
+ * @param ctx - host cordis context.
  */
-export function apply(_ctx: Context): void {}
+export function apply(ctx: Context): void {
+  ctx.settings.register(settingsNamespace(PROVIDER_LABEL_NS), PrefsSchema, { applies: 'live' })
+}

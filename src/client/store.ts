@@ -79,6 +79,31 @@ export function readConfig(section: RawSection | undefined): ModelEnhanceConfig 
 }
 
 /**
+ * Build the model-label → provider display-name map the model-selector badge
+ * reads. Keys cover both the configured model `id` and its optional display
+ * `name`, so whichever label the selector shows resolves to the provider.
+ */
+export function providerLabelsOf(section: RawSection | undefined): Record<string, string> {
+  const labels: Record<string, string> = {}
+  const providerMap = section?.providers
+  if (isPlainObject(providerMap)) {
+    for (const [name, value] of Object.entries(providerMap)) {
+      const profile = isPlainObject(value) ? value : {}
+      const display_name = nonEmptyString(profile.displayName) ?? name
+      if (!Array.isArray(profile.models)) continue
+      for (const entry of profile.models) {
+        if (!isPlainObject(entry)) continue
+        const id = nonEmptyString(entry.id)
+        const modelName = nonEmptyString(entry.name)
+        if (id !== undefined) labels[id] = display_name
+        if (modelName !== undefined) labels[modelName] = display_name
+      }
+    }
+  }
+  return labels
+}
+
+/**
  * Render the `reasoningEfforts` dict for a newly collected set of levels.
  * Preserves an existing level's wire spelling (e.g. `max: ultra`) and defaults
  * newly-added levels to `null` (off) / the level key (everything else), matching

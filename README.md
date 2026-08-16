@@ -6,6 +6,9 @@ section to the DSH Web settings page for editing, per provider and model:
 - **Reasoning efforts** (`reasoningEfforts`) — an enable toggle plus a
   multi-select of levels (off / minimal / low / medium / high / xhigh / max),
   covering every thinking level DSH's `llm-pi-ai` adapter accepts.
+- **Provider label** — an optional switch that shows the provider (接入方)
+  name as a badge before the model name in the model selector, projected from
+  the same `llm-pi-ai` section.
 
 Changes apply live (the `llm-pi-ai` namespace registers with `live` semantics)
 and every unrelated key in the section is preserved.

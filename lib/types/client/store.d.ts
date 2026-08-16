@@ -17,6 +17,12 @@ export declare function readModel(model: RawModelProfile): ModelEnhanceModel | n
  */
 export declare function readConfig(section: RawSection | undefined): ModelEnhanceConfig;
 /**
+ * Build the model-label → provider display-name map the model-selector badge
+ * reads. Keys cover both the configured model `id` and its optional display
+ * `name`, so whichever label the selector shows resolves to the provider.
+ */
+export declare function providerLabelsOf(section: RawSection | undefined): Record<string, string>;
+/**
  * Render the `reasoningEfforts` dict for a newly collected set of levels.
  * Preserves an existing level's wire spelling (e.g. `max: ultra`) and defaults
  * newly-added levels to `null` (off) / the level key (everything else), matching

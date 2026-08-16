@@ -23,7 +23,9 @@ for pkg in \
   dsh-client-ui-slots \
   dsh-client-ui-settings \
   dsh-api-remotes \
-  dsh-typert-protocol; do
+  dsh-typert-protocol \
+  dsh-settings \
+  schemastery; do
   ln -sfn "$DSH_NM/$pkg" "node_modules/@deepseek-ai/$pkg"
 done
 

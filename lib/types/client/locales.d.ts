@@ -24,6 +24,10 @@ export declare const zh: {
     'effort.high': string;
     'effort.xhigh': string;
     'effort.max': string;
+    providerLabel: string;
+    providerLabelDesc: string;
+    providerLabelOn: string;
+    providerLabelOff: string;
     readonly: string;
 };
 export type ModelEnhanceKey = keyof typeof zh;
@@ -49,6 +53,10 @@ export declare const en: {
     'effort.high': string;
     'effort.xhigh': string;
     'effort.max': string;
+    providerLabel: string;
+    providerLabelDesc: string;
+    providerLabelOn: string;
+    providerLabelOff: string;
     readonly: string;
 };
 /** Locale namespace id registered under ctx.locale. */

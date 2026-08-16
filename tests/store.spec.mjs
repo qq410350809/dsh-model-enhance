@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildOps, deepEqualJson, readConfig, renderEfforts } from '../lib/store.js'
+import { buildOps, deepEqualJson, providerLabelsOf, readConfig, renderEfforts } from '../lib/store.js'
 
 const section = {
   providers: {
@@ -89,6 +89,15 @@ test('buildOps preserves hand-declared reasoningEfforts: false', () => {
   // leaving it untouched must not emit an op.
   assert.equal(config.providers[0].models[0].enabled, false)
   assert.deepEqual(buildOps(raw, config), [])
+})
+
+test('providerLabelsOf maps model ids/names to provider display names', () => {
+  const labels = providerLabelsOf(section)
+  assert.equal(labels['model-a'], 'ACME AI')
+  assert.equal(labels['Model A'], 'ACME AI')
+  assert.equal(labels['model-b'], 'ACME AI')
+  assert.equal(labels['model-c'], 'Beta')
+  assert.deepEqual(providerLabelsOf(undefined), {})
 })
 
 test('renderEfforts preserves custom wire spellings', () => {

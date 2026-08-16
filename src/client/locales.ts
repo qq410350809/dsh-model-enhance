@@ -25,6 +25,10 @@ export const zh = {
   'effort.high': '高',
   'effort.xhigh': '超高',
   'effort.max': '最大',
+  'providerLabel': '接入方显示模式',
+  'providerLabelDesc': '在模型选择器中，于模型名称前显示接入方（提供方）名称徽标',
+  'providerLabelOn': '已开启接入方显示模式（点击关闭）',
+  'providerLabelOff': '未开启接入方显示模式（点击开启）',
   'readonly': '设置文档为只读，无法保存',
 } satisfies Record<string, string>
 
@@ -52,6 +56,10 @@ export const en = {
   'effort.high': 'High',
   'effort.xhigh': 'X-high',
   'effort.max': 'Max',
+  'providerLabel': 'Provider label',
+  'providerLabelDesc': 'Show the provider name as a badge before the model name in the model selector',
+  'providerLabelOn': 'Provider label enabled (click to disable)',
+  'providerLabelOff': 'Provider label disabled (click to enable)',
   'readonly': 'Settings document is read-only; cannot save',
 } satisfies Record<ModelEnhanceKey, string>
 
